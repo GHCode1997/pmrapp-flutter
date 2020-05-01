@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "665350494731",
+    "firebase_url": "https://pmrapp-4e852.firebaseio.com",
+    "project_id": "pmrapp-4e852",
+    "storage_bucket": "pmrapp-4e852.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:665350494731:android:189cef400e9cabdec9850e",
+        "android_client_info": {
+          "package_name": "cl.gustavo.flutterapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "665350494731-cfmq5hf0dg20qmbsfes98fv4t33rkpnb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2at1xMX7RTLRtcIxjYtwuUennOimZ02w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "665350494731-cfmq5hf0dg20qmbsfes98fv4t33rkpnb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
