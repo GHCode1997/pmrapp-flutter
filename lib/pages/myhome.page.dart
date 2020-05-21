@@ -201,14 +201,16 @@ class _MyHomePageState extends State<MyHomePage> {
               "comment": " " + _multiLineTextFieldcontroller.text
             }).then((response){
               print(response.body);
-              if (response.statusCode == 200 && response.body == '') {
+              if (response.statusCode == 409) {
                 print('asignada');
                 _neverSatisfied('Estado de la Solicitud','Ya tienes una hora asignada en el dia');
-              } else if (response.statusCode == 200 && response.body != '') {
+              } else if (response.statusCode == 201) {
                 setState(() {
                   _getHoras();
                 });
                 _showhora(index);
+              } else if(response.statusCode == 400) {
+                _neverSatisfied('Error en asignacion','Intente mas tarde');
               }
             });
           }
