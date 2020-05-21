@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:pmrapp/horaQR.page.dart';
+import 'package:pmrapp/pages/horaQR.page.dart';
 import 'package:pmrapp/model/hora.dart';
 import 'package:pmrapp/services/locator.service.dart';
 import 'package:pmrapp/services/user.service.dart';
@@ -224,6 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return false;
         break;
     }
+    return true;
   }
 
   Future<void> _neverSatisfied(String title, String message) async {

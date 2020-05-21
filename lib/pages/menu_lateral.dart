@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart'; 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pmrapp/services/locator.service.dart';
 import 'package:pmrapp/services/storage.service.dart';
 import 'package:pmrapp/services/user.service.dart';
-import 'services/locator.service.dart';
-import 'services/navigation.service.dart';
+import 'package:pmrapp/services/navigation.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MenuLateral extends StatefulWidget {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pmrapp/services/locator.service.dart';
-import 'menu_lateral.dart';
-import 'services/user.service.dart';
 import 'dart:convert';
-import 'model/hora.dart';
+
+import 'package:pmrapp/model/hora.dart';
+import 'package:pmrapp/pages/menu_lateral.dart';
+import 'package:pmrapp/services/locator.service.dart';
+import 'package:pmrapp/services/user.service.dart';
 
 class SolicitudesPage extends StatefulWidget {
   SolicitudesPage({Key key,}) : super(key: key);

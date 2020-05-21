@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
-import 'asignada.page.dart';
-import 'myhome.page.dart';
-import 'services/locator.service.dart'as lo;
-import 'services/navigation.service.dart';
-import 'login.page.dart';
+import 'package:pmrapp/pages/asignada.page.dart';
+import 'package:pmrapp/pages/login.page.dart';
+import 'package:pmrapp/pages/myhome.page.dart';
+import 'package:pmrapp/services/locator.service.dart'as lo;
+import 'package:pmrapp/services/navigation.service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

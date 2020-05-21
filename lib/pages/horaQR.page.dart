@@ -5,22 +5,19 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:mailer2/mailer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pmrapp/model/hora.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class HoraQR extends StatefulWidget {
+class HoraQR extends StatelessWidget {
+
+  
   HoraQR(this.horaPaciente, this.username);
-  _HoraQRState createState() => _HoraQRState();
   final String username;
   final Hora horaPaciente;
-}
-
-class _HoraQRState extends State<HoraQR> {
-  TextEditingController emailSender = new TextEditingController();
-  GlobalKey globalKey = new GlobalKey();
+  final TextEditingController emailSender = new TextEditingController();
+  final GlobalKey globalKey = new GlobalKey();
   Widget build(BuildContext context) {
     return Center(
       child: Card(
@@ -31,13 +28,13 @@ class _HoraQRState extends State<HoraQR> {
               key: this.globalKey,
               child: QrImage(
                 data: 'paciente=' +
-                    widget.username +
+                    username +
                     '&fecha=' +
-                    widget.horaPaciente.fecha +
+                    horaPaciente.fecha +
                     '&hora=' +
-                    widget.horaPaciente.hora +
+                    horaPaciente.hora +
                     '&medico=' +
-                    widget.horaPaciente.medico.run,
+                    horaPaciente.medico.run,
                 version: QrVersions.auto,
                 backgroundColor: Colors.white,
                 size: 320,
@@ -59,7 +56,7 @@ class _HoraQRState extends State<HoraQR> {
             MaterialButton(
                 child: Text('Enviar'),
                 onPressed: () {
-                  _captureAndSharePng();
+                  _captureAndSharePng(context);
                 })
           ],
         ),
@@ -67,7 +64,7 @@ class _HoraQRState extends State<HoraQR> {
     );
   }
 
-  Future<void> _captureAndSharePng() async {
+  Future<void> _captureAndSharePng(BuildContext context) async {
     var options = new GmailSmtpOptions()
       ..username = 'pmrappserviciotecnico@gmail.com'
       ..password = 'r9HDDprmPMCWAEK';
@@ -80,7 +77,7 @@ class _HoraQRState extends State<HoraQR> {
 
       final tempDir = await getTemporaryDirectory();
       final file =
-          await new File('${tempDir.path}/qr_${widget.horaPaciente.id}.png')
+          await new File('${tempDir.path}/qr_${horaPaciente.id}.png')
               .create();
       await file.writeAsBytes(pngBytes);
       var emailTransport = new SmtpTransport(options);
@@ -91,7 +88,7 @@ class _HoraQRState extends State<HoraQR> {
         ..attachments.add(new Attachment(file: file))
         ..text =
             'Este qr se utilizará para validar su hora agendada. \n Por favor presentar en el cesfam.\n Saludos pmrapp'
-        ..html = '<h1>Test</h1><p>Hey!</p>';
+        ..html = '<h1>PMRAPP</h1><p>Estamos a su servicio</p>';
       showAlertDialog(context);
       emailTransport
           .send(envelope)

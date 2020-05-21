@@ -1,10 +1,9 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'services/locator.service.dart';
-import 'services/navigation.service.dart';
-import 'services/user.service.dart';
-import 'model/user.dart';
+import 'package:pmrapp/model/user.dart';
+import 'package:pmrapp/services/locator.service.dart';
+import 'package:pmrapp/services/user.service.dart';
+import 'package:pmrapp/services/navigation.service.dart';
 import 'dart:convert' as convert;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -148,7 +147,7 @@ class _LoginPage extends State<LoginPage> {
           Map map = {
             'username': '' + username.text,
             'password': '' + pass.text
-          };
+          };          
           var service = locator<UserService>();
           showAlertDialog(context);
           var response = await service.login(map);
