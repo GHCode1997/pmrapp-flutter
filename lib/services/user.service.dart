@@ -14,6 +14,17 @@ class UserService {
         body: convert.utf8.encode(convert.json.encode(user)));
   }
 
+  Future<Response> getPaciente(String run) async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token');
+    return get(Uri.encodeFull(environment.Api.url+'/api/paciente?run='+run),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+    );
+  }
+
   Future<Response> getListHorasSolicitadas() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token');

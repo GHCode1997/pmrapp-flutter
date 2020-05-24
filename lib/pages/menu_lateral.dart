@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart'; 
 import 'package:flutter/material.dart';
@@ -9,6 +10,10 @@ import 'package:pmrapp/services/user.service.dart';
 import 'package:pmrapp/services/navigation.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/paciente.dart';
+import '../services/locator.service.dart';
+import '../services/user.service.dart';
+
 class MenuLateral extends StatefulWidget {
   MenuLateral({Key key}) : super(key: key);
   @override
@@ -17,23 +22,17 @@ class MenuLateral extends StatefulWidget {
 
 class _MenuLateral extends State<MenuLateral> {
   String username = '';
-  String cesfam = '';
+  Paciente paciente;
   File file = File('');
-  NetworkImage image ;
+  NetworkImage image = NetworkImage('https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/240px-User_icon_2.svg.png') ;
   _MenuLateral();
 
   @override
   void initState() { 
     super.initState();
-    getUrl().then((value)=> this.image = NetworkImage(value));
+    this.getPaciente();
   }
 
-  Future<String> getUrl() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String urlImagen = prefs.getString('urlImagen');
-    if (urlImagen != null) return urlImagen;
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/240px-User_icon_2.svg.png';
-  }
 
   @override
   void dispose() {
@@ -42,16 +41,25 @@ class _MenuLateral extends State<MenuLateral> {
 
   Future<String> getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String username = prefs.getString('name');
+    final String username = prefs.getString('username');
     if (username != null) return username;
     return "";
   }
 
-  Future<String> getCesfamName() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String cesfam = prefs.getString('cesfam');
-    if (cesfam != null) return cesfam;
-    return "";
+  getPaciente() async{
+    locator<UserService>().getPaciente(await getUserName())
+    .then((value){
+      if(value.statusCode == 200){
+        setState(() {
+          paciente = Paciente.fromJSON(json.decode(value.body)); 
+          if(paciente.urlImagen != null){
+            this.image = NetworkImage(paciente.urlImagen);
+          } 
+        });
+      }else {
+        print('Estatus code no deseado');
+      }
+    });
   }
 
   Future<List<Face>> getFaces(context) async {
@@ -73,24 +81,19 @@ class _MenuLateral extends State<MenuLateral> {
   @override
   Widget build(BuildContext context) {
     TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 20.0);
-    getUserName().then((value) => this.setState(() => this.username = value));
-    getCesfamName().then((value) => this.setState(() => this.cesfam = value));
-    getUrl().then((value) {
-       this.setState(() => this.image = NetworkImage(value));
-    });
     return new Drawer(
         child: ListView(
       children: <Widget>[
         new UserAccountsDrawerHeader(
           accountName: Text(
-            this.username,
+            this.paciente != null ? this.paciente.nombres +'\n'+ this.paciente.apellidos: '',
             style: style.copyWith(
               color: Colors.black87,
               fontSize: 20,
             ),
           ),
           accountEmail: Text(
-            this.cesfam,
+            this.paciente.cesfam != null ? this.paciente.cesfam.nombre:'',
             style: style.copyWith(color: Colors.black, fontSize: 10),
           ),
           margin: EdgeInsets.only(bottom: 0.0),
@@ -126,7 +129,7 @@ class _MenuLateral extends State<MenuLateral> {
           leading: Icon(
             Icons.home,
           ),
-          subtitle: Text("Home",
+          title: Text("Home",
               style: style.copyWith(
                   color: Colors.black, fontWeight: FontWeight.normal)),
           onTap: () {
@@ -137,7 +140,7 @@ class _MenuLateral extends State<MenuLateral> {
           leading: Icon(
             Icons.schedule,
           ),
-          subtitle: Text("Horas Solicitadas",
+          title: Text("Horas Solicitadas",
               style: style.copyWith(
                   color: Colors.black, fontWeight: FontWeight.normal)),
           onTap: () {
@@ -148,7 +151,7 @@ class _MenuLateral extends State<MenuLateral> {
           color: Colors.red,
           child: ListTile(
             leading: Icon(Icons.exit_to_app),
-            subtitle: Text("Cerrar Sesión",
+            title: Text("Cerrar Sesión",
                 style: style.copyWith(
                     color: Colors.white, fontWeight: FontWeight.normal)),
             onTap: () async {
