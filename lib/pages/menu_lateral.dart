@@ -93,7 +93,7 @@ class _MenuLateral extends State<MenuLateral> {
             ),
           ),
           accountEmail: Text(
-            this.paciente.cesfam != null ? this.paciente.cesfam.nombre:'',
+            this.paciente != null ? this.paciente.cesfam.nombre:'',
             style: style.copyWith(color: Colors.black, fontSize: 10),
           ),
           margin: EdgeInsets.only(bottom: 0.0),
