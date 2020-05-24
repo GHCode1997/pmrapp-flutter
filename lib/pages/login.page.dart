@@ -159,13 +159,6 @@ class _LoginPage extends State<LoginPage> {
                 await SharedPreferences.getInstance();
             prefs.setString('token', user.token);
             prefs.setString('username', user.username);
-            prefs.setString(
-                'name',
-                user.paciente.nombres.split(' ')[0] +
-                    '\n' +
-                    user.paciente.apellidos);
-            prefs.setString('cesfam', user.paciente.cesfam.nombre);
-            prefs.setString('urlImagen',user.paciente.urlImagen);
             locator<NavigationService>().navigateTo('home');
             username.clear();
             pass.clear();
