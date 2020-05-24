@@ -10,7 +10,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pmrapp/model/hora.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../services/locator.service.dart';
 import '../services/storage.service.dart';
+import '../services/user.service.dart';
 
 class HoraQR extends StatelessWidget {
   HoraQR(this.horaPaciente, this.username);
@@ -69,7 +71,10 @@ class HoraQR extends StatelessWidget {
                           '${tempDir.path}/qr_${horaPaciente.id}.png')
                       .create();
                   this.qr = await fileq.writeAsBytes(pngBytes);
-                  FirebaseStorageService.loadImage(this.qr, 'qr_${horaPaciente.id}_$username');
+                  FirebaseStorageService.loadImage(this.qr, 'qr_${horaPaciente.id}_$username')
+                  .then((value){
+                    locator<UserService>().updatePictureQRHora(value, horaPaciente.id.toString());
+                  });
                   _captureAndSharePng(context);
                 })
           ],
