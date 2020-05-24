@@ -17,7 +17,7 @@ class UserService {
   Future<Response> getPaciente(String run) async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token');
-    return get(Uri.encodeFull(environment.Api.url+'/api/paciente?run='+run),
+    return get(Uri.encodeFull(environment.Api.url+'/api/paciente/byRun?run='+run),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
