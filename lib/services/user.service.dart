@@ -59,4 +59,17 @@ class UserService {
         }
     );
   }
+
+  Future<Response> updatePictureQRHora(String url, String id) async{
+    Map body = {'url': url};
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token');
+    return post(Uri.encodeFull(environment.Api.url+'/api/hora/updateImage?id='+id),
+    body: convert.utf8.encode(convert.json.encode(body)),
+    headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+    );
+  }
 }

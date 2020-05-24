@@ -10,14 +10,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pmrapp/model/hora.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class HoraQR extends StatelessWidget {
+import '../services/storage.service.dart';
 
-  
+class HoraQR extends StatelessWidget {
   HoraQR(this.horaPaciente, this.username);
   final String username;
   final Hora horaPaciente;
   final TextEditingController emailSender = new TextEditingController();
   final GlobalKey globalKey = new GlobalKey();
+  File qr;
   Widget build(BuildContext context) {
     return Center(
       child: Card(
@@ -55,7 +56,20 @@ class HoraQR extends StatelessWidget {
             ),
             MaterialButton(
                 child: Text('Enviar'),
-                onPressed: () {
+                onPressed: () async {
+                  RenderRepaintBoundary boundary =
+                      globalKey.currentContext.findRenderObject();
+                  var image = await boundary.toImage();
+                  ByteData byteData =
+                      await image.toByteData(format: ImageByteFormat.png);
+                  Uint8List pngBytes = byteData.buffer.asUint8List();
+
+                  final tempDir = await getTemporaryDirectory();
+                  final fileq = await new File(
+                          '${tempDir.path}/qr_${horaPaciente.id}.png')
+                      .create();
+                  this.qr = await fileq.writeAsBytes(pngBytes);
+                  FirebaseStorageService.loadImage(this.qr, 'qr_${horaPaciente.id}_$username');
                   _captureAndSharePng(context);
                 })
           ],
@@ -69,31 +83,20 @@ class HoraQR extends StatelessWidget {
       ..username = 'pmrappserviciotecnico@gmail.com'
       ..password = 'r9HDDprmPMCWAEK';
     try {
-      RenderRepaintBoundary boundary =
-          globalKey.currentContext.findRenderObject();
-      var image = await boundary.toImage();
-      ByteData byteData = await image.toByteData(format: ImageByteFormat.png);
-      Uint8List pngBytes = byteData.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final file =
-          await new File('${tempDir.path}/qr_${horaPaciente.id}.png')
-              .create();
-      await file.writeAsBytes(pngBytes);
       var emailTransport = new SmtpTransport(options);
       var envelope = new Envelope()
         ..from = 'pmrappserviciotecnico@gmail.com'
         ..recipients.add(this.emailSender.text)
         ..subject = 'Envio de qr'
-        ..attachments.add(new Attachment(file: file))
+        ..attachments.add(new Attachment(file: this.qr))
         ..text =
             'Este qr se utilizará para validar su hora agendada. \n Por favor presentar en el cesfam.\n Saludos pmrapp'
         ..html = '<h1>PMRAPP</h1><p>Estamos a su servicio</p>';
       showAlertDialog(context);
-      emailTransport
-          .send(envelope)
-          .then((envelope){ Navigator.pop(context); Navigator.pop(context);})
-          .catchError((e) => print('Error occurred: $e'));
+      emailTransport.send(envelope).then((envelope) {
+        Navigator.pop(context);
+        Navigator.pop(context);
+      }).catchError((e) => print('Error occurred: $e'));
     } catch (e) {
       print(e.toString());
     }
@@ -104,7 +107,8 @@ class HoraQR extends StatelessWidget {
       content: new Row(
         children: [
           CircularProgressIndicator(),
-          Container(margin: EdgeInsets.only(left: 5), child: Text("Enviando...")),
+          Container(
+              margin: EdgeInsets.only(left: 5), child: Text("Enviando...")),
         ],
       ),
     );
