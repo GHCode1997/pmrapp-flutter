@@ -1,3 +1,3 @@
 class Api{
-  static const url = 'https://pmrapp.herokuapp.com';
+  static const url = 'https://pmrapp.team';
 }
