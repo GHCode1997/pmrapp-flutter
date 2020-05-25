@@ -5,7 +5,6 @@ import 'package:pmrapp/model/hora.dart';
 import 'package:pmrapp/pages/menu_lateral.dart';
 import 'package:pmrapp/services/locator.service.dart';
 import 'package:pmrapp/services/user.service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SolicitudesPage extends StatefulWidget {
   SolicitudesPage({Key key,}) : super(key: key);
@@ -85,8 +84,6 @@ class _SolicitudesPageState extends State<SolicitudesPage> {
   }
 
   _showqrimagen(int index) async{
-    final SharedPreferences prefs =
-                await SharedPreferences.getInstance();
     await showDialog(
       context: context,
       builder: (BuildContext context){
