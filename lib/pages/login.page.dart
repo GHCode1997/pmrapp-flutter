@@ -167,7 +167,14 @@ class _LoginPage extends State<LoginPage> {
             .then((value){
               if(value.statusCode == 200){
                 Paciente pac = Paciente.fromJSON(convert.json.decode(value.body));
-                locator<PMRDatabase>().insert(PMRApp(name: pac.nombres+' '+pac.apellidos,cesfam: pac.cesfam.nombre));
+                print(prefs.getInt('id').toString());
+                if(prefs.getInt('id') == null){
+                  locator<PMRDatabase>()
+                .insert(PMRApp(name: pac.nombres+' '+pac.apellidos,cesfam: pac.cesfam.nombre))
+                .then((value){
+                  prefs.setInt('id', value.id);
+                });
+                }
               }
             });
             username.clear();

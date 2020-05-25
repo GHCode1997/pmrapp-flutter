@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -31,28 +30,14 @@ class _MenuLateral extends State<MenuLateral> {
   Uint8List bytes;
   NetworkImage image = NetworkImage(
       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/240px-User_icon_2.svg.png');
-  PMRApp pmr ;
+  PMRApp pmr;
+  int id;
   _MenuLateral();
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      locator<PMRDatabase>().getPMRApp(1)
-      .then((value) {
-        setState(() {
-          this.pmr = value;
-          if(this.pmr.path != null){
-            File(pmr.path)
-          .readAsBytes().then((value){
-            setState(() {
-              this.bytes = value;
-            });
-          });
-          }
-        });
-      });
-    });
+    getId();
   }
 
   @override
@@ -60,11 +45,20 @@ class _MenuLateral extends State<MenuLateral> {
     super.dispose();
   }
 
-  Future<String> getUserName() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String username = prefs.getString('username');
-    if (username != null) return username;
-    return "";
+  getId() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    locator<PMRDatabase>().getPMRApp(prefs.getInt('id')).then((value) {
+      setState(() {
+        this.pmr = value;
+      });
+      if (this.pmr.path != null) {
+        File(pmr.path).readAsBytes().then((value) {
+          setState(() {
+            this.bytes = value;
+          });
+        });
+      }
+    });
   }
 
   Future<List<Face>> getFaces(context) async {
@@ -85,15 +79,15 @@ class _MenuLateral extends State<MenuLateral> {
 
   @override
   Widget build(BuildContext context) {
+    
+
     TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 20.0);
     return new Drawer(
         child: ListView(
       children: <Widget>[
         new UserAccountsDrawerHeader(
           accountName: Text(
-            this.pmr != null
-                ? this.pmr.name
-                : '',
+            this.pmr != null ? this.pmr.name : '',
             style: style.copyWith(
               color: Colors.black87,
               fontSize: 20,
@@ -105,7 +99,9 @@ class _MenuLateral extends State<MenuLateral> {
           ),
           margin: EdgeInsets.only(bottom: 0.0),
           decoration: BoxDecoration(
-              image: DecorationImage (image: this.bytes == null ? image : MemoryImage(this.bytes) , fit: BoxFit.fitHeight)),
+              image: DecorationImage(
+                  image: this.bytes == null ? image : MemoryImage(this.bytes),
+                  fit: BoxFit.fitHeight)),
           currentAccountPicture: MaterialButton(
               minWidth: 8,
               child: Icon(Icons.camera_alt),
@@ -120,10 +116,20 @@ class _MenuLateral extends State<MenuLateral> {
                       final fileq = await new File(
                               '${tempDir.path}/photo_${this.username}.png')
                           .create();
-                      PMRApp pmr = await locator<PMRDatabase>().getPMRApp(1);
-                      pmr.path = fileq.path;
-                      locator<PMRDatabase>().update(pmr);
                       fileq.writeAsBytes(await file.readAsBytes());
+                      final SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      PMRApp pmr = await locator<PMRDatabase>()
+                          .getPMRApp(prefs.getInt('id'));
+                      pmr.path = fileq.path;
+                      locator<PMRDatabase>().update(pmr).then((value) {
+                        if (value == 0) {
+                          print('no se realizaron cambios');
+                        } else if (value > 0) {
+                          print('se realizo el cambio');
+                        }
+                      });
+
                       locator<UserService>()
                           .updatePicturePaciente(value.url)
                           .then((onValue) => print(onValue.body));
