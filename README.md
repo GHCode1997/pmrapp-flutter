@@ -7,3 +7,4 @@ Dentro de las caracteristicas que la app tiene son:
 * Agendar una hora registrada en el backend
 * Enviar codigo qr que se genera del agendamiento a un correo usando una dependencia de flutter
 * Analizar al momento de subir una foto de perfil con la camara, si esa foto corresponde a un perfil de una persona, usando firebase_ml_vision
+* Utiliza base de datos sqlite
