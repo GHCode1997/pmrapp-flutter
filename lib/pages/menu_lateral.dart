@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:firebase_ml_vision/firebase_ml_vision.dart'; 
+import 'dart:typed_data';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pmrapp/model/pmrapp.dart';
+import 'package:pmrapp/providers/database.dart';
 import 'package:pmrapp/services/locator.service.dart';
 import 'package:pmrapp/services/storage.service.dart';
 import 'package:pmrapp/services/user.service.dart';
@@ -24,15 +28,32 @@ class _MenuLateral extends State<MenuLateral> {
   String username = '';
   Paciente paciente;
   File file = File('');
-  NetworkImage image = NetworkImage('https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/240px-User_icon_2.svg.png') ;
+  Uint8List bytes;
+  NetworkImage image = NetworkImage(
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/240px-User_icon_2.svg.png');
+  PMRApp pmr ;
   _MenuLateral();
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
-    this.getPaciente();
+    setState(() {
+      locator<PMRDatabase>().getPMRApp(1)
+      .then((value) {
+        setState(() {
+          this.pmr = value;
+          if(this.pmr.path != null){
+            File(pmr.path)
+          .readAsBytes().then((value){
+            setState(() {
+              this.bytes = value;
+            });
+          });
+          }
+        });
+      });
+    });
   }
-
 
   @override
   void dispose() {
@@ -44,22 +65,6 @@ class _MenuLateral extends State<MenuLateral> {
     final String username = prefs.getString('username');
     if (username != null) return username;
     return "";
-  }
-
-  getPaciente() async{
-    locator<UserService>().getPaciente(await getUserName())
-    .then((value){
-      if(value.statusCode == 200){
-        setState(() {
-          paciente = Paciente.fromJSON(json.decode(value.body));
-          if(paciente.urlImagen != null){
-            this.image = NetworkImage(paciente.urlImagen);
-          } 
-        });
-      }else {
-        print('Estatus code no deseado');
-      }
-    });
   }
 
   Future<List<Face>> getFaces(context) async {
@@ -86,40 +91,47 @@ class _MenuLateral extends State<MenuLateral> {
       children: <Widget>[
         new UserAccountsDrawerHeader(
           accountName: Text(
-            this.paciente != null ? this.paciente.nombres +'\n'+ this.paciente.apellidos: '',
+            this.pmr != null
+                ? this.pmr.name
+                : '',
             style: style.copyWith(
               color: Colors.black87,
               fontSize: 20,
             ),
           ),
           accountEmail: Text(
-            this.paciente != null ? this.paciente.cesfam.nombre:'',
+            this.pmr != null ? this.pmr.cesfam : '',
             style: style.copyWith(color: Colors.black, fontSize: 10),
           ),
           margin: EdgeInsets.only(bottom: 0.0),
           decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: this.image,
-                  fit: BoxFit.fitHeight)),
+              image: DecorationImage (image: this.bytes == null ? image : MemoryImage(this.bytes) , fit: BoxFit.fitHeight)),
           currentAccountPicture: MaterialButton(
               minWidth: 8,
               child: Icon(Icons.camera_alt),
-              onPressed: (){
+              onPressed: () {
                 getFaces(context).then((onValue) {
-                    if(onValue.length == 1) {
-                      _getImage(file.path.split('/').last.split('\.')[0]).then((value) async {
-                        this.setState(() => this.image = value);
-                        Navigator.of(context).pop();
-                        final SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
-                       prefs.setString('urlImagen', value.url);
-                        locator<UserService>().updatePicturePaciente(value.url)
-                        .then((onValue)=> print(onValue.body));
-                      });
-                    }else {
+                  if (onValue.length == 1) {
+                    _getImage(file.path.split('/').last.split('\.')[0])
+                        .then((value) async {
+                      this.setState(() => this.image = value);
                       Navigator.of(context).pop();
-                      _neverSatisfied("No se detecto el rosto o mas un rosto");
-                    }
+                      final tempDir = await getTemporaryDirectory();
+                      final fileq = await new File(
+                              '${tempDir.path}/photo_${this.username}.png')
+                          .create();
+                      PMRApp pmr = await locator<PMRDatabase>().getPMRApp(1);
+                      pmr.path = fileq.path;
+                      locator<PMRDatabase>().update(pmr);
+                      fileq.writeAsBytes(await file.readAsBytes());
+                      locator<UserService>()
+                          .updatePicturePaciente(value.url)
+                          .then((onValue) => print(onValue.body));
+                    });
+                  } else {
+                    Navigator.of(context).pop();
+                    _neverSatisfied("No se detecto el rosto o mas un rosto");
+                  }
                 });
               }),
         ),
@@ -214,11 +226,11 @@ class _MenuLateral extends State<MenuLateral> {
     NetworkImage m;
     if (name != '') {
       await FirebaseStorageService.loadImage(file, name).then((downloadUrl) {
-         m = NetworkImage(
+        m = NetworkImage(
           downloadUrl,
-         );
+        );
       });
-       
+
       return m;
     }
     return this.image;

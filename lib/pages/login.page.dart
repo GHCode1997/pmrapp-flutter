@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pmrapp/model/paciente.dart';
+import 'package:pmrapp/model/pmrapp.dart';
 import 'package:pmrapp/model/user.dart';
+import 'package:pmrapp/providers/database.dart';
 import 'package:pmrapp/services/locator.service.dart';
 import 'package:pmrapp/services/user.service.dart';
 import 'package:pmrapp/services/navigation.service.dart';
@@ -27,7 +30,7 @@ class _LoginPage extends State<LoginPage> {
     pass.dispose();
     super.dispose();
   }
-
+  
   Future<String> getUserName() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String username = prefs.getString('username');
@@ -160,6 +163,13 @@ class _LoginPage extends State<LoginPage> {
             prefs.setString('token', user.token);
             prefs.setString('username', user.username);
             locator<NavigationService>().navigateTo('home');
+            locator<UserService>().getPaciente(user.username)
+            .then((value){
+              if(value.statusCode == 200){
+                Paciente pac = Paciente.fromJSON(convert.json.decode(value.body));
+                locator<PMRDatabase>().insert(PMRApp(name: pac.nombres+' '+pac.apellidos,cesfam: pac.cesfam.nombre));
+              }
+            });
             username.clear();
             pass.clear();
           } else if (response.statusCode == 403) {
