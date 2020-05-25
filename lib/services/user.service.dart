@@ -59,7 +59,7 @@ class UserService {
   }
   
   Future<Response> updatePicturePaciente(String url) async{
-    Map body = {'urlImage': url};
+    Map body = {'url': url};
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token');
     return post(Uri.encodeFull(environment.Api.url+'/api/paciente/updateImage'),

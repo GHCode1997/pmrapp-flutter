@@ -51,7 +51,7 @@ class _MenuLateral extends State<MenuLateral> {
     .then((value){
       if(value.statusCode == 200){
         setState(() {
-          paciente = Paciente.fromJSON(json.decode(value.body)); 
+          paciente = Paciente.fromJSON(json.decode(value.body));
           if(paciente.urlImagen != null){
             this.image = NetworkImage(paciente.urlImagen);
           } 
@@ -105,7 +105,6 @@ class _MenuLateral extends State<MenuLateral> {
               minWidth: 8,
               child: Icon(Icons.camera_alt),
               onPressed: (){
-                print('change');
                 getFaces(context).then((onValue) {
                     if(onValue.length == 1) {
                       _getImage(file.path.split('/').last.split('\.')[0]).then((value) async {
@@ -115,7 +114,7 @@ class _MenuLateral extends State<MenuLateral> {
                             await SharedPreferences.getInstance();
                        prefs.setString('urlImagen', value.url);
                         locator<UserService>().updatePicturePaciente(value.url)
-                        .then((onValue)=> print(onValue));
+                        .then((onValue)=> print(onValue.body));
                       });
                     }else {
                       Navigator.of(context).pop();
@@ -215,7 +214,6 @@ class _MenuLateral extends State<MenuLateral> {
     NetworkImage m;
     if (name != '') {
       await FirebaseStorageService.loadImage(file, name).then((downloadUrl) {
-        print('dowload '+downloadUrl);
          m = NetworkImage(
           downloadUrl,
          );

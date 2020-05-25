@@ -16,7 +16,7 @@ class Paciente {
         nombres: paciente['nombres'],
         apellidos: paciente['apellidos'],
         direccion: paciente['direccion'],
-        urlImagen: paciente['urlImagen'],
+        urlImagen: paciente['imagen'],
         cronico: paciente['cronico'],
         cesfam: Cesfam.fromJSON(paciente['cesfam']));
     }

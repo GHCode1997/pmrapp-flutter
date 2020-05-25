@@ -101,7 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               _showhora(index);
                             }
                             
-                            print('solicitar');
                           },
                         )
                       ],
@@ -191,7 +190,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         })) {
       case true:
-        print('true');
         try {
           final result =
               await InternetAddress.lookup('pmrappteam.herokuapp.com');
@@ -200,9 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 _horas[index].id.toString(), {
               "comment": " " + _multiLineTextFieldcontroller.text
             }).then((response){
-              print(response.body);
               if (response.statusCode == 409) {
-                print('asignada');
                 _neverSatisfied('Estado de la Solicitud','Ya tienes una hora asignada en el dia');
               } else if (response.statusCode == 201) {
                 setState(() {
@@ -222,7 +218,6 @@ class _MyHomePageState extends State<MyHomePage> {
         break;
       case false:
         // ...
-        print('false');
         return false;
         break;
     }
