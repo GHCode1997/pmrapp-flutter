@@ -28,32 +28,30 @@ class _MyHomePageState extends State<MyHomePage> {
   _MyHomePageState({this.title});
   void _getHoras() async {
     _horas = List<Hora>();
-     try {
-    //   final result = await InternetAddress.lookup('pmrappteam.herokuapp.com');
-    //   if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        locator<UserService>()
-            .getHorasEspecialistas('medico general')
-            .then((response) {
-          if (response.statusCode == 200) {
-            setState(() {
-              List<dynamic> list = json.decode(response.body);
-              list.forEach((f) => _horas.add(Hora.fromJSON(f)));
-            });
-          }
-        });
-    //   }
-     } on Exception catch (_) {
-       _neverSatisfied("Error conexión", "Hubo un error en la conexión");
-       return;
-     }
+    try {
+      //   final result = await InternetAddress.lookup('pmrappteam.herokuapp.com');
+      //   if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+      locator<UserService>()
+          .getHorasEspecialistas('medico general')
+          .then((response) {
+        if (response.statusCode == 200) {
+          setState(() {
+            List<dynamic> list = json.decode(response.body);
+            list.forEach((f) => _horas.add(Hora.fromJSON(f)));
+          });
+        }
+      });
+      //   }
+    } on Exception catch (_) {
+      _neverSatisfied("Error conexión", "Hubo un error en la conexión");
+      return;
+    }
   }
 
   void initState() {
     super.initState();
     _getHoras();
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -93,14 +91,40 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: <Widget>[
                         FlatButton(
                           child: Text('Solicitar'),
-                          onPressed: () async{
+                          onPressed: () async {
                             setState(() {
                               this.index = index;
                             });
-                            if(await _askedToLead(this.index)){
-                              _showhora(index);
+                            if (await _askedToLead(this.index)) {
+                              try {
+                                final result = await InternetAddress.lookup(
+                                    'pmrapp.herokuapp.com');
+                                if (result.isNotEmpty &&
+                                    result[0].rawAddress.isNotEmpty) {
+                                  locator<UserService>().asignarPaciente(
+                                      _horas[index].id.toString(), {
+                                    "comment":
+                                        " " + _multiLineTextFieldcontroller.text
+                                  }).then((response) {
+                                    if (response.statusCode == 409) {
+                                      _neverSatisfied('Estado de la Solicitud',
+                                          'Ya tienes una hora asignada en el dia');
+                                    } else if (response.statusCode == 201) {
+                                      setState(() {
+                                        _getHoras();
+                                      });
+                                      _showhora(index);
+                                    } else if (response.statusCode == 400) {
+                                      _neverSatisfied('Error en asignacion',
+                                          'Intente mas tarde');
+                                    }
+                                  });
+                                }
+                              } on Exception catch (_) {
+                                _neverSatisfied("Error conexión",
+                                    "Hubo un error en la conexión");
+                              }
                             }
-                            
                           },
                         )
                       ],
@@ -109,22 +133,22 @@ class _MyHomePageState extends State<MyHomePage> {
             }));
   }
 
-  _showhora(int index) async{
-    final SharedPreferences prefs =
-                await SharedPreferences.getInstance();
+  _showhora(int index) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     await showDialog(
-      context: context,
-      builder: (BuildContext context){
-        
-        return SimpleDialog(children: <Widget>[
-          HoraQR(_horas[index],prefs.getString('username'))
-        ],);
-    });
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            children: <Widget>[
+              HoraQR(_horas[index], prefs.getString('username'))
+            ],
+          );
+        });
   }
 
   Future<bool> _askedToLead(int index) async {
     _multiLineTextFieldcontroller.clear();
-    switch (await showDialog<bool>(
+    return showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
@@ -188,40 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
               )
             ],
           );
-        })) {
-      case true:
-        try {
-          final result =
-              await InternetAddress.lookup('pmrappteam.herokuapp.com');
-          if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-            locator<UserService>().asignarPaciente(
-                _horas[index].id.toString(), {
-              "comment": " " + _multiLineTextFieldcontroller.text
-            }).then((response){
-              if (response.statusCode == 409) {
-                _neverSatisfied('Estado de la Solicitud','Ya tienes una hora asignada en el dia');
-              } else if (response.statusCode == 201) {
-                setState(() {
-                  _getHoras();
-                });
-                _showhora(index);
-              } else if(response.statusCode == 400) {
-                _neverSatisfied('Error en asignacion','Intente mas tarde');
-              }
-            });
-          }
-          return true;
-        } on Exception catch (_) {
-          _neverSatisfied("Error conexión", "Hubo un error en la conexión");
-        }
-
-        break;
-      case false:
-        // ...
-        return false;
-        break;
-    }
-    return true;
+        });
   }
 
   Future<void> _neverSatisfied(String title, String message) async {
