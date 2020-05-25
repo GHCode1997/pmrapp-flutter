@@ -24,10 +24,11 @@ create table $tablePMR (
   }
 
   Future<PMRApp> getPMRApp(int id) async {
-    List<Map> maps = await db.query(tablePMR,
+    List<Map<String,dynamic>> maps = await db.query(tablePMR,
         columns: ['id', 'name', 'cesfam', 'path'],
         where: 'id = ?',
         whereArgs: [id]);
+    print(maps);
     if (maps.length > 0) {
       return PMRApp.fromMap(maps.first);
     }

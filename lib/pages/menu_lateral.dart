@@ -27,6 +27,7 @@ class _MenuLateral extends State<MenuLateral> {
   String username = '';
   Paciente paciente;
   File file = File('');
+  File file2;
   Uint8List bytes;
   NetworkImage image = NetworkImage(
       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/240px-User_icon_2.svg.png');
@@ -37,7 +38,7 @@ class _MenuLateral extends State<MenuLateral> {
   @override
   void initState() {
     super.initState();
-    getId();
+    this.getId();
   }
 
   @override
@@ -47,18 +48,21 @@ class _MenuLateral extends State<MenuLateral> {
 
   getId() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    locator<PMRDatabase>().getPMRApp(prefs.getInt('id')).then((value) {
-      setState(() {
-        this.pmr = value;
-      });
-      if (this.pmr.path != null) {
-        File(pmr.path).readAsBytes().then((value) {
-          setState(() {
-            this.bytes = value;
-          });
+    int id = prefs.getInt('id');
+    if (id != null) {
+      print(id);
+      var pmr2 = await locator<PMRDatabase>().getPMRApp(id);
+      if (pmr2.path != null) {
+        this.file2 = new File(pmr2.path);
+        var bytes2 = await file2.readAsBytes();
+        setState(() { 
+          this.bytes = bytes2;
         });
       }
-    });
+      setState(() {
+        this.pmr = pmr2;
+      });
+    }
   }
 
   Future<List<Face>> getFaces(context) async {
@@ -79,8 +83,6 @@ class _MenuLateral extends State<MenuLateral> {
 
   @override
   Widget build(BuildContext context) {
-    
-
     TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 20.0);
     return new Drawer(
         child: ListView(
@@ -100,7 +102,7 @@ class _MenuLateral extends State<MenuLateral> {
           margin: EdgeInsets.only(bottom: 0.0),
           decoration: BoxDecoration(
               image: DecorationImage(
-                  image: this.bytes == null ? image : MemoryImage(this.bytes),
+                  image: this.file2 == null ? image : MemoryImage(this.bytes),
                   fit: BoxFit.fitHeight)),
           currentAccountPicture: MaterialButton(
               minWidth: 8,
@@ -112,9 +114,11 @@ class _MenuLateral extends State<MenuLateral> {
                         .then((value) async {
                       this.setState(() => this.image = value);
                       Navigator.of(context).pop();
-                      final tempDir = await getTemporaryDirectory();
+                      // getting a directory path for saving
+                      final Directory directory = await getApplicationDocumentsDirectory();
+                      final String path = directory.path;
                       final fileq = await new File(
-                              '${tempDir.path}/photo_${this.username}.png')
+                              '$path/photo_perfil.png')
                           .create();
                       fileq.writeAsBytes(await file.readAsBytes());
                       final SharedPreferences prefs =
