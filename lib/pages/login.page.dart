@@ -143,6 +143,8 @@ class _LoginPage extends State<LoginPage> {
   }
 
   void _login() async {
+    final SharedPreferences prefs =
+                await SharedPreferences.getInstance();
     if (_formKey.currentState.validate()) {
       try {
       //   final result = await InternetAddress.lookup('pmrappteam.herokuapp.com');
@@ -150,7 +152,8 @@ class _LoginPage extends State<LoginPage> {
           Map map = {
             'username': '' + username.text,
             'password': '' + pass.text
-          };          
+          };
+          var usern = prefs.getString('username');
           var service = locator<UserService>();
           showAlertDialog(context);
           var response = await service.login(map);
@@ -158,13 +161,11 @@ class _LoginPage extends State<LoginPage> {
             Navigator.pop(context);
             var jsonresponse = convert.json.decode(response.body);
             User user = new User.fromJSON(jsonresponse);
-            final SharedPreferences prefs =
-                await SharedPreferences.getInstance();
             prefs.setString('token', user.token);
             prefs.setString('username', user.username);
             locator<NavigationService>().navigateTo('home');
             print(prefs.getInt('id').toString());
-            if(prefs.getInt('id') == null){
+            if(prefs.getInt('id') == null || usern != username.text){
             locator<UserService>().getPaciente(user.username)
             .then((value){
               if(value.statusCode == 200){
@@ -174,7 +175,6 @@ class _LoginPage extends State<LoginPage> {
                 .then((value){
                   prefs.setInt('id', value.id);
                 });
-                
               }
             });
             }
